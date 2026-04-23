@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CopyDesk — AI Copywriting Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1612;
+    --ink-mid: #4a4540;
+    --ink-light: #8a8480;
+    --paper: #faf8f4;
+    --paper-warm: #f2ede4;
+    --paper-card: #ffffff;
+    --amber: #c8760a;
+    --amber-light: #fdf3e3;
+    --amber-border: #e8c88a;
+    --teal: #1a7a6e;
+    --teal-light: #e8f5f3;
+    --border: #e0d8cc;
+    --border-dark: #c8bfb0;
+    --red: #a83232;
+    --red-light: #fdf0f0;
+    --shadow: 0 1px 3px rgba(26,22,18,0.08), 0 4px 16px rgba(26,22,18,0.04);
+    --shadow-lifted: 0 4px 12px rgba(26,22,18,0.12), 0 12px 32px rgba(26,22,18,0.06);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--ink);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--paper);
+    letter-spacing: -0.3px;
+  }
+  .logo span { color: var(--amber-border); }
+  .header-sub {
+    font-size: 12px;
+    color: rgba(250,248,244,0.45);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── Progress Steps ── */
+  .progress-bar {
+    background: var(--paper-warm);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+  }
+  .step-tab {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px solid transparent;
+    cursor: default;
+    user-select: none;
+    transition: color 0.2s, border-color 0.2s;
+    position: relative;
+  }
+  .step-tab.active { color: var(--ink); border-bottom-color: var(--amber); }
+  .step-tab.done { color: var(--teal); cursor: pointer; }
+  .step-tab.done:hover { color: var(--teal); background: var(--teal-light); }
+  .step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--ink-light);
+    font-size: 11px;
+    font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .step-tab.active .step-num { background: var(--amber); color: #fff; }
+  .step-tab.done .step-num {
+    background: var(--teal);
+    color: #fff;
+    font-size: 13px;
+  }
+  .step-tab.done .step-num::after { content: '✓'; }
+  .step-tab.done .step-num-inner { display: none; }
+
+  /* ── Main Layout ── */
+  .main { max-width: 860px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    letter-spacing: -0.3px;
+  }
+  .card-sub {
+    font-size: 13px;
+    color: var(--ink-light);
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── Form Controls ── */
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+  .field { margin-bottom: 1.25rem; }
+  input[type="text"], select, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--paper);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    appearance: none;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(200,118,10,0.12);
+    background: #fff;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8480' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+  textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 580px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── Tone Pills ── */
+  .tone-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tone-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-dark);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--paper);
+    color: var(--ink-mid);
+    user-select: none;
+  }
+  .tone-pill:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-light); }
+  .tone-pill.selected { background: var(--amber); border-color: var(--amber); color: #fff; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn-primary:hover:not(:disabled) { background: #2c2820; transform: translateY(-1px); box-shadow: var(--shadow-lifted); }
+  .btn-primary:active:not(:disabled) { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-mid);
+    border: 1px solid var(--border-dark);
+  }
+  .btn-ghost:hover { background: var(--paper-warm); color: var(--ink); }
+
+  .btn-amber {
+    background: var(--amber);
+    color: #fff;
+  }
+  .btn-amber:hover:not(:disabled) { background: #a86208; transform: translateY(-1px); box-shadow: var(--shadow-lifted); }
+  .btn-amber:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* ── Generated Copy Output ── */
+  .copy-output {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem 1.5rem;
+    min-height: 120px;
+    font-size: 15px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    position: relative;
+  }
+  .copy-output.streaming { border-color: var(--amber); background: var(--amber-light); }
+  .copy-output.empty { color: var(--ink-light); font-style: italic; }
+
+  .variant-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: 1rem;
+    transition: border-color 0.15s;
+  }
+  .variant-card:hover { border-color: var(--border-dark); }
+  .variant-card.selected-variant { border-color: var(--amber); }
+  .variant-header {
+    background: var(--paper-warm);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .variant-label { font-size: 12px; font-weight: 500; color: var(--ink-mid); text-transform: uppercase; letter-spacing: 0.06em; }
+  .variant-body { padding: 1rem 1.25rem; font-size: 14px; line-height: 1.75; white-space: pre-wrap; }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 5px 10px;
+    font-size: 12px;
+    color: var(--ink-mid);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 5px;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: var(--paper-warm); border-color: var(--border-dark); color: var(--ink); }
+  .copy-btn.copied { background: var(--teal-light); border-color: var(--teal); color: var(--teal); }
+
+  /* ── Refine Panel ── */
+  .refine-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+    align-items: flex-start;
+  }
+  .refine-row textarea {
+    flex: 1;
+    min-height: 56px;
+  }
+
+  .quick-refine-pills { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 1rem; }
+  .quick-pill {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border-dark);
+    background: var(--paper);
+    font-size: 12px;
+    color: var(--ink-mid);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .quick-pill:hover { background: var(--paper-warm); border-color: var(--ink-light); color: var(--ink); }
+
+  /* ── History ── */
+  .history-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .history-item:hover { background: var(--paper-warm); border-color: var(--border-dark); }
+  .history-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--paper-warm);
+    border: 1px solid var(--border);
+    color: var(--ink-light);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .history-preview { font-size: 13px; color: var(--ink-mid); line-height: 1.4; }
+
+  /* ── Loader ── */
+  .loader {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .loader span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--amber);
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+  .loader span:nth-child(2) { animation-delay: 0.15s; }
+  .loader span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  /* ── Notice ── */
+  .notice {
+    background: var(--amber-light);
+    border: 1px solid var(--amber-border);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #6b3d05;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .notice-icon { flex-shrink: 0; font-size: 15px; line-height: 1.5; }
+
+  .error-notice {
+    background: var(--red-light);
+    border: 1px solid #e8b0b0;
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--red);
+    margin-top: 1rem;
+  }
+
+  /* ── Section/Screen Management ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── Scrollable Output ── */
+  .output-scroll { max-height: 420px; overflow-y: auto; }
+
+  .tag { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tag-amber { background: var(--amber-light); color: var(--amber); border: 1px solid var(--amber-border); }
+  .tag-teal { background: var(--teal-light); color: var(--teal); border: 1px solid #a0d4ce; }
+  .tag-ink { background: var(--paper-warm); color: var(--ink-mid); border: 1px solid var(--border); }
+
+  /* ── Divider ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+  /* ── API Key Setup ── */
+  #setup-screen .card { max-width: 540px; margin: 4rem auto; }
+  #setup-screen .big-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    text-align: center;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  #setup-screen .big-logo span { color: var(--amber); }
+  #setup-screen .setup-sub { text-align: center; color: var(--ink-light); font-size: 14px; margin-bottom: 2rem; }
+  .key-input-wrap { display: flex; gap: 8px; }
+  .key-input-wrap input { flex: 1; font-family: 'DM Mono', monospace; font-size: 13px; }
+  .key-hint { font-size: 12px; color: var(--ink-light); margin-top: 6px; line-height: 1.5; }
+  .feature-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.75rem; }
+  .feature-item { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink-mid); }
+  .feature-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); flex-shrink: 0; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ SETUP SCREEN ═══ -->
+<div id="setup-screen" class="active">
+  <div class="main">
+    <div class="card">
+      <div class="big-logo">Copy<span>Desk</span></div>
+      <p class="setup-sub">AI Copywriting Studio — for your whole team</p>
+
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div>Ad copy & headlines</div>
+        <div class="feature-item"><div class="feature-dot"></div>Social media captions</div>
+        <div class="feature-item"><div class="feature-dot"></div>Brand voice rewrites</div>
+        <div class="feature-item"><div class="feature-dot"></div>Long-form content</div>
+        <div class="feature-item"><div class="feature-dot"></div>Brief → Draft → Refine</div>
+        <div class="feature-item"><div class="feature-dot"></div>Multiple variants</div>
+      </div>
+
+      <div class="field">
+        <label>Team password</label>
+        <div class="key-input-wrap">
+          <input type="password" id="team-password" placeholder="Enter team password..." autocomplete="off" />
+          <button class="btn btn-primary" onclick="checkPassword()">Enter Studio</button>
+        </div>
+      </div>
+      <div id="setup-error" class="error-notice" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div id="app-screen">
+  <header>
+    <div class="logo">Copy<span>Desk</span></div>
+    <div class="header-sub">AI Studio</div>
+  </header>
+
+  <div class="progress-bar">
+    <div class="step-tab active" id="tab-1" onclick="goToStep(1)">
+      <div class="step-num"><span class="step-num-inner">1</span></div>
+      Brief
+    </div>
+    <div class="step-tab" id="tab-2" onclick="goToStep(2)">
+      <div class="step-num"><span class="step-num-inner">2</span></div>
+      Generate
+    </div>
+    <div class="step-tab" id="tab-3" onclick="goToStep(3)">
+      <div class="step-num"><span class="step-num-inner">3</span></div>
+      Refine
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- STEP 1: BRIEF -->
+    <div class="screen active" id="screen-1">
+      <div class="card">
+        <div class="card-title">Fill in your brief</div>
+        <p class="card-sub">Tell us about the copy you need — the more detail, the better the output.</p>
+
+        <div class="two-col">
+          <div class="field">
+            <label>Copy type</label>
+            <select id="copy-type">
+              <option value="">Choose type...</option>
+              <optgroup label="Advertising">
+                <option value="ad-headline">Ad headline</option>
+                <option value="ad-body">Ad body copy</option>
+                <option value="ad-cta">CTA / button copy</option>
+              </optgroup>
+              <optgroup label="Social Media">
+                <option value="social-instagram">Instagram caption</option>
+                <option value="social-linkedin">LinkedIn post</option>
+                <option value="social-twitter">Twitter/X post</option>
+                <option value="social-facebook">Facebook post</option>
+              </optgroup>
+              <optgroup label="Brand & Content">
+                <option value="brand-rewrite">Brand voice rewrite</option>
+                <option value="tagline">Tagline / slogan</option>
+                <option value="bio">Brand bio / about</option>
+              </optgroup>
+              <optgroup label="Long-form">
+                <option value="blog-intro">Blog post intro</option>
+                <option value="blog-full">Full blog post</option>
+                <option value="article">Article / editorial</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Brand / Client name</label>
+            <input type="text" id="brand-name" placeholder="e.g. Nomad Coffee Co." />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Output language</label>
+          <select id="copy-language">
+            <option value="english">English</option>
+            <option value="arabic">Arabic (Modern Standard)</option>
+            <option value="saudi-arabic">Arabic — Saudi dialect</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Product or service</label>
+          <input type="text" id="product" placeholder="What are we writing about? e.g. a new cold brew range" />
+        </div>
+
+        <div class="field">
+          <label>Target audience</label>
+          <input type="text" id="audience" placeholder="e.g. urban millennials aged 25-35 who value sustainability" />
+        </div>
+
+        <div class="field">
+          <label>Key message or goal</label>
+          <textarea id="key-message" rows="2" placeholder="What's the single most important thing this copy needs to do or say?"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Tone of voice</label>
+          <div class="tone-grid">
+            <div class="tone-pill" onclick="toggleTone(this)">Bold</div>
+            <div class="tone-pill" onclick="toggleTone(this)">Warm</div>
+            <div class="tone-pill" onclick="toggleTone(this)">Professional</div>
+            <div class="tone-pill" onclick="toggleTone(this)">Playful</div>
+            <div class="tone-pill" onclick="toggleTone(this)">Minimal</div>
+            <div class="tone-pill" onclick="toggleTone(this)">Provocative</div>
+            <div class="tone-pill" onclick="toggleTone(this)">Storytelling</div>
+            <div class="tone-pill" onclick="toggleTone(this)">Witty</div>
+            <div class="tone-pill" onclick="toggleTone(this)">Authoritative</div>
+            <div class="tone-pill" onclick="toggleTone(this)">Conversational</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Brand guidelines or style notes <span style="color:var(--ink-light); font-weight:400">(optional)</span></label>
+          <textarea id="brand-notes" rows="2" placeholder="e.g. Never use exclamation marks. Avoid jargon. Our voice is like a knowledgeable friend..."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Existing copy to rewrite <span style="color:var(--ink-light); font-weight:400">(optional, for brand voice rewrites)</span></label>
+          <textarea id="existing-copy" rows="3" placeholder="Paste existing copy here to get a rewritten version in the target tone..."></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="goToGenerate()">
+            Generate copy
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span id="brief-error" style="color:var(--red); font-size:13px; display:none"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: GENERATE -->
+    <div class="screen" id="screen-2">
+      <div class="card">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div class="card-title" id="gen-title">Generating your copy...</div>
+            <p class="card-sub" id="gen-sub">3 variants based on your brief</p>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+            <span id="copy-type-tag" class="tag tag-ink"></span>
+            <span id="lang-tag" class="tag tag-teal"></span>
+            <span id="tone-tag" class="tag tag-amber"></span>
+          </div>
+        </div>
+
+        <div id="variants-container" class="output-scroll"></div>
+
+        <div id="gen-loader" style="text-align:center; padding: 3rem 0;">
+          <div class="loader"><span></span><span></span><span></span></div>
+          <p style="margin-top:12px; font-size:13px; color:var(--ink-light)" id="loader-msg">Writing your copy...</p>
+        </div>
+
+        <div id="gen-error" class="error-notice" style="display:none"></div>
+
+        <div id="gen-actions" style="display:none">
+          <hr>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="goToStep(3)">
+              Refine selected variant
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="btn btn-ghost" onclick="regenerate()">Regenerate</button>
+            <button class="btn btn-ghost" onclick="goToStep(1)">Edit brief</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: REFINE -->
+    <div class="screen" id="screen-3">
+      <div class="card">
+        <div class="card-title">Refine your copy</div>
+        <p class="card-sub">Give feedback and iterate until it's perfect.</p>
+
+        <label style="margin-bottom:8px">Current version</label>
+        <div class="copy-output" id="refine-current" style="margin-bottom:1.25rem">Select a variant from step 2 to refine</div>
+
+        <hr>
+
+        <label style="margin-bottom:8px">Quick refinements</label>
+        <div class="quick-refine-pills">
+          <div class="quick-pill" onclick="quickRefine('Make it shorter and punchier')">Shorter & punchier</div>
+          <div class="quick-pill" onclick="quickRefine('Make it longer with more detail')">Add more detail</div>
+          <div class="quick-pill" onclick="quickRefine('Make the tone warmer and more human')">Warmer tone</div>
+          <div class="quick-pill" onclick="quickRefine('Make it more bold and direct')">More bold</div>
+          <div class="quick-pill" onclick="quickRefine('Add a stronger call to action')">Stronger CTA</div>
+          <div class="quick-pill" onclick="quickRefine('Make it sound more premium and elevated')">More premium</div>
+          <div class="quick-pill" onclick="quickRefine('Simplify the language for a broader audience')">Simpler language</div>
+          <div class="quick-pill" onclick="quickRefine('Add more storytelling and emotion')">More emotion</div>
+        </div>
+
+        <label style="margin-bottom:8px">Or describe your changes</label>
+        <div class="refine-row">
+          <textarea id="refine-prompt" placeholder="e.g. Make the headline more attention-grabbing, replace 'utilise' with simpler words, add a sense of urgency..." rows="3"></textarea>
+        </div>
+        <div class="btn-row" style="margin-bottom:1.5rem">
+          <button class="btn btn-amber" id="refine-btn" onclick="doRefine()">
+            Apply changes
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div id="refine-loader" style="display:none"><div class="loader"><span></span><span></span><span></span></div></div>
+        </div>
+
+        <div id="refine-error" class="error-notice" style="display:none"></div>
+
+        <!-- Revision history -->
+        <div id="refine-history-section" style="display:none">
+          <hr>
+          <label style="margin-bottom:10px">Revision history</label>
+          <div id="refine-history"></div>
+        </div>
+
+        <hr>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="final-copy-btn" onclick="copyFinal()">
+            Copy final text
+          </button>
+          <button class="btn btn-ghost" onclick="goToStep(1)">Start new brief</button>
+        </div>
+        <div id="final-copy-notice" style="display:none; margin-top:8px; font-size:13px; color:var(--teal)">Copied to clipboard!</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let brief = {};
+let generatedVariants = [];
+let selectedVariant = '';
+let refineHistory = [];
+
+// ── Auth ──
+const TEAM_PASSWORD = 'Copywriting101';
+const _k = atob('c2stYW50LWFwaTAzLTNjWFBrYnUzSXhUYngxekl0TFJSNEF2QVVsUGRpWS10a19KSDV3bkFVMENfTVUwRVFvT3FlMGVhWmlxSEZ6a2M2R184RWtIUWh0ZU5RR3paejVNcFEtVXV6US1nQUE=');
+let apiKey = '';
+
+function checkPassword() {
+  const p = document.getElementById('team-password').value;
+  if (p === TEAM_PASSWORD) {
+    apiKey = _k;
+    document.getElementById('setup-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+  } else {
+    document.getElementById('setup-error').style.display = 'block';
+    document.getElementById('setup-error').textContent = 'Incorrect password. Ask your team lead for access.';
+  }
+}
+document.getElementById('team-password').addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
+
+// ── Step Navigation ──
+function goToStep(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + n).classList.add('active');
+
+  document.querySelectorAll('.step-tab').forEach((t, i) => {
+    t.classList.remove('active');
+    if (i + 1 < n) t.classList.add('done'); else t.classList.remove('done');
+    if (i + 1 === n) t.classList.add('active');
+  });
+}
+
+// ── Tone Pills ──
+function toggleTone(el) {
+  el.classList.toggle('selected');
+}
+function getSelectedTones() {
+  return Array.from(document.querySelectorAll('.tone-pill.selected')).map(p => p.textContent);
+}
+
+// ── Brief Validation & Generate ──
+function goToGenerate() {
+  const copyType = document.getElementById('copy-type').value;
+  const product = document.getElementById('product').value.trim();
+  const keyMsg = document.getElementById('key-message').value.trim();
+  const err = document.getElementById('brief-error');
+
+  if (!copyType) { err.style.display = 'inline'; err.textContent = 'Please choose a copy type.'; return; }
+  if (!product) { err.style.display = 'inline'; err.textContent = 'Please describe the product or service.'; return; }
+  if (!keyMsg) { err.style.display = 'inline'; err.textContent = 'Please add a key message or goal.'; return; }
+  err.style.display = 'none';
+
+  brief = {
+    copyType,
+    brand: document.getElementById('brand-name').value.trim(),
+    product,
+    audience: document.getElementById('audience').value.trim(),
+    keyMessage: keyMsg,
+    tones: getSelectedTones(),
+    brandNotes: document.getElementById('brand-notes').value.trim(),
+    existingCopy: document.getElementById('existing-copy').value.trim(),
+    language: document.getElementById('copy-language').value
+  };
+
+  goToStep(2);
+  generate();
+}
+
+function copyTypeLabel(v) {
+  const map = {
+    'ad-headline':'Ad headline','ad-body':'Ad body copy','ad-cta':'CTA copy',
+    'social-instagram':'Instagram','social-linkedin':'LinkedIn','social-twitter':'Twitter/X','social-facebook':'Facebook',
+    'brand-rewrite':'Brand rewrite','tagline':'Tagline','bio':'Brand bio',
+    'blog-intro':'Blog intro','blog-full':'Blog post','article':'Article'
+  };
+  return map[v] || v;
+}
+
+function languageLabel(v) {
+  return { english: 'English', arabic: 'Arabic (Modern Standard)', 'saudi-arabic': 'Saudi Arabic dialect' }[v] || 'English';
+}
+
+function buildPrompt() {
+  const ct = copyTypeLabel(brief.copyType);
+  const lang = languageLabel(brief.language);
+  const isSaudi = brief.language === 'saudi-arabic';
+  const isArabic = brief.language === 'arabic' || isSaudi;
+
+  let p = `You are an expert creative copywriter at a top agency.`;
+  if (isArabic) p += ` You are also a native Arabic speaker with deep expertise in ${isSaudi ? 'Saudi Arabian culture, colloquialisms, and the Saudi dialect (Najdi/Gulf tone)' : 'Modern Standard Arabic (Fusha) used across the Arab world for professional and advertising contexts'}.`;
+  p += ` Write 3 distinct variants of the following copy.\n\n`;
+  p += `OUTPUT LANGUAGE: ${lang}${isSaudi ? ' — write in Saudi dialect, not Modern Standard Arabic. Use natural Saudi expressions and cultural references where appropriate.' : isArabic ? ' — write in formal Modern Standard Arabic (Fusha), suitable for pan-Arab advertising.' : ''}\n`;
+  p += `COPY TYPE: ${ct}\n`;
+  if (brief.brand) p += `BRAND: ${brief.brand}\n`;
+  p += `PRODUCT/SERVICE: ${brief.product}\n`;
+  if (brief.audience) p += `TARGET AUDIENCE: ${brief.audience}\n`;
+  p += `KEY MESSAGE: ${brief.keyMessage}\n`;
+  if (brief.tones.length) p += `TONE: ${brief.tones.join(', ')}\n`;
+  if (brief.brandNotes) p += `BRAND GUIDELINES: ${brief.brandNotes}\n`;
+  if (brief.existingCopy) p += `EXISTING COPY TO REWRITE:\n${brief.existingCopy}\n`;
+
+  p += `\nWrite exactly 3 variants entirely in ${lang}. Format your response ONLY as:\n\nVARIANT 1:\n[copy here]\n\nVARIANT 2:\n[copy here]\n\nVARIANT 3:\n[copy here]\n\nMake each variant meaningfully different in approach, angle, or style. Make them ready to use — no explanations, no preambles, just the copy.`;
+  return p;
+}
+
+async function generate() {
+  document.getElementById('variants-container').innerHTML = '';
+  document.getElementById('gen-loader').style.display = 'block';
+  document.getElementById('gen-actions').style.display = 'none';
+  document.getElementById('gen-error').style.display = 'none';
+  document.getElementById('gen-title').textContent = 'Generating your copy...';
+  document.getElementById('loader-msg').textContent = 'Writing your copy...';
+
+  const ct = copyTypeLabel(brief.copyType);
+  document.getElementById('copy-type-tag').textContent = ct;
+  document.getElementById('lang-tag').textContent = languageLabel(brief.language);
+  document.getElementById('tone-tag').textContent = brief.tones.length ? brief.tones.join(', ') : 'No tone specified';
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: buildPrompt() }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'API error ' + res.status);
+    }
+
+    const data = await res.json();
+    const text = data.content[0].text;
+    parseAndDisplayVariants(text);
+    document.getElementById('gen-loader').style.display = 'none';
+    document.getElementById('gen-title').textContent = 'Here are your 3 variants';
+    document.getElementById('gen-actions').style.display = 'block';
+
+  } catch(e) {
+    document.getElementById('gen-loader').style.display = 'none';
+    document.getElementById('gen-error').style.display = 'block';
+    document.getElementById('gen-error').textContent = 'Error: ' + e.message;
+  }
+}
+
+function regenerate() { generate(); }
+
+function parseAndDisplayVariants(text) {
+  generatedVariants = [];
+  const parts = text.split(/VARIANT\s+\d+:/i).filter(p => p.trim());
+  const container = document.getElementById('variants-container');
+  container.innerHTML = '';
+
+  parts.forEach((part, i) => {
+    const copy = part.trim();
+    generatedVariants.push(copy);
+
+    const card = document.createElement('div');
+    card.className = 'variant-card';
+    card.id = 'variant-' + i;
+    card.innerHTML = `
+      <div class="variant-header">
+        <span class="variant-label">Variant ${i + 1}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="copy-btn" onclick="copyVariant(${i}, this)">Copy</button>
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="selectVariant(${i})">Select & refine →</button>
+        </div>
+      </div>
+      <div class="variant-body" style="${brief.language !== 'english' ? 'direction:rtl;text-align:right;font-size:16px;line-height:2' : ''}">${escapeHtml(copy)}</div>
+    `;
+    container.appendChild(card);
+  });
+
+  if (generatedVariants.length > 0) {
+    selectVariant(0);
+  }
+}
+
+function selectVariant(i) {
+  document.querySelectorAll('.variant-card').forEach(c => c.classList.remove('selected-variant'));
+  document.getElementById('variant-' + i).classList.add('selected-variant');
+  selectedVariant = generatedVariants[i];
+  const rc = document.getElementById('refine-current');
+  rc.textContent = selectedVariant;
+  rc.style.direction = brief.language !== 'english' ? 'rtl' : 'ltr';
+  rc.style.textAlign = brief.language !== 'english' ? 'right' : 'left';
+  refineHistory = [{ version: selectedVariant, instruction: 'Original' }];
+  renderRefineHistory();
+}
+
+function copyVariant(i, btn) {
+  navigator.clipboard.writeText(generatedVariants[i]).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+// ── Refine ──
+function quickRefine(text) {
+  document.getElementById('refine-prompt').value = text;
+  doRefine();
+}
+
+async function doRefine() {
+  const instruction = document.getElementById('refine-prompt').value.trim();
+  if (!instruction) return;
+
+  const btn = document.getElementById('refine-btn');
+  const loader = document.getElementById('refine-loader');
+  btn.disabled = true;
+  loader.style.display = 'inline-flex';
+  document.getElementById('refine-error').style.display = 'none';
+
+  const currentCopy = document.getElementById('refine-current').textContent;
+
+  const prompt = `You are an expert creative copywriter. Revise the following copy based on the instruction.
+
+COPY TYPE: ${copyTypeLabel(brief.copyType)}
+${brief.brand ? 'BRAND: ' + brief.brand : ''}
+${brief.tones.length ? 'TONE: ' + brief.tones.join(', ') : ''}
+${brief.brandNotes ? 'BRAND GUIDELINES: ' + brief.brandNotes : ''}
+
+CURRENT COPY:
+${currentCopy}
+
+INSTRUCTION: ${instruction}
+
+Return ONLY the revised copy, nothing else. No explanation, no preamble.`;
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API error'); }
+
+    const data = await res.json();
+    const revised = data.content[0].text.trim();
+
+    refineHistory.push({ version: revised, instruction });
+    selectedVariant = revised;
+    const rc = document.getElementById('refine-current');
+    rc.textContent = revised;
+    rc.style.direction = brief.language !== 'english' ? 'rtl' : 'ltr';
+    rc.style.textAlign = brief.language !== 'english' ? 'right' : 'left';
+    document.getElementById('refine-prompt').value = '';
+    renderRefineHistory();
+
+  } catch(e) {
+    document.getElementById('refine-error').style.display = 'block';
+    document.getElementById('refine-error').textContent = 'Error: ' + e.message;
+  }
+
+  btn.disabled = false;
+  loader.style.display = 'none';
+}
+
+function renderRefineHistory() {
+  const section = document.getElementById('refine-history-section');
+  const container = document.getElementById('refine-history');
+  if (refineHistory.length <= 1) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  container.innerHTML = '';
+
+  [...refineHistory].reverse().forEach((item, i) => {
+    const isLatest = i === 0;
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.onclick = () => {
+      selectedVariant = item.version;
+      document.getElementById('refine-current').textContent = item.version;
+    };
+    div.innerHTML = `
+      <div>
+        <span class="history-badge">${isLatest ? 'Latest' : 'v' + (refineHistory.length - i - 1)}</span>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--ink-light);margin-bottom:3px">${escapeHtml(item.instruction)}</div>
+        <div class="history-preview">${escapeHtml(item.version.slice(0, 120))}${item.version.length > 120 ? '…' : ''}</div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function copyFinal() {
+  const copy = document.getElementById('refine-current').textContent;
+  navigator.clipboard.writeText(copy).then(() => {
+    document.getElementById('final-copy-notice').style.display = 'block';
+    setTimeout(() => { document.getElementById('final-copy-notice').style.display = 'none'; }, 2000);
+  });
+}
+
+// ── Utils ──
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Init
+document.getElementById('app-screen').style.display = 'none';
+</script>
+</body>
+</html>
