@@ -4,15 +4,17 @@ export default async function handler(req, res) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   
   if (!apiKey) {
-    return res.status(500).json({ error: 'API key not found in environment' });
+    return res.status(500).json({ error: 'No API key found' });
   }
+
+  const trimmedKey = apiKey.trim();
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
+        'x-api-key': trimmedKey,
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify(req.body)
